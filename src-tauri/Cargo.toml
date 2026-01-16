@@ -1,0 +1,24 @@
+[package]
+name = "desktop-pet"
+version = "0.1.0"
+description = "Desktop Pet - Stone Guardian"
+authors = ["Kangjun Lee"]
+edition = "2021"
+
+[lib]
+name = "desktop_pet_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api", "tray-icon"] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+mouce = "0.2"
+mouse_position = "0.1"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-shell = "2"
