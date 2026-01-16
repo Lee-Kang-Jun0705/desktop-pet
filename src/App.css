@@ -137,6 +137,7 @@ html, body, #root {
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease;
+  pointer-events: none;
 }
 
 .interact-mode-notice small {
@@ -153,4 +154,51 @@ html, body, #root {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+.permission-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.permission-modal {
+  background: rgba(20, 20, 20, 0.95);
+  color: #fff;
+  padding: 18px 22px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+.permission-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.permission-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ddd;
+  margin-bottom: 12px;
+}
+
+.permission-button {
+  background: #3aa96b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.permission-button:hover {
+  background: #34985f;
 }

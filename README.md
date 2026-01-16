@@ -21,8 +21,9 @@ irm https://raw.githubusercontent.com/kangjunlee/desktop-pet/main/install.ps1 | 
 
 ## 사용법
 
-- **일반 모드**: 바탕화면 클릭 시 펫이 그 위치로 달려감
-- **펫 조작 모드**: 트레이 아이콘 → "펫 조작 모드" 클릭
+- **자동 모드(기본)**: 클릭 통과 ON + 펫 근처에서만 자동으로 조작 가능  
+  - 바탕화면 클릭 시 펫이 해당 위치로 달려감
+- **고정 모드**: 트레이 아이콘 → "클릭 통과 ON / 클릭 통과 OFF" 선택
   - 드래그로 위치 이동
   - 마우스 휠로 크기 조절
   - 우클릭으로 메뉴
@@ -34,6 +35,8 @@ irm https://raw.githubusercontent.com/kangjunlee/desktop-pet/main/install.ps1 | 
 - ✅ 듀얼 모니터 지원
 - ✅ 스프라이트 애니메이션 (idle, walk, run, attack)
 - ✅ AI 배회 시스템
+- ✅ 마우스 시선 추적 + 근접 반응
+- ✅ 바탕화면 클릭 이동
 - ✅ 시스템 트레이 메뉴
 - ✅ macOS / Windows 지원
 

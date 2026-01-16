@@ -55,6 +55,13 @@ macOS 및 Windows 데스크톱에서 자유롭게 돌아다니는 애니메이�
   - 목표 위치로 자동 이동
   - 이동 방향에 따라 좌우 반전
 
+- **마우스 반응 행동**
+  - 커서 방향을 바라봄
+  - 커서가 가까우면 따라가기/가끔 공격
+
+- **바탕화면 클릭 이동 (일반 모드)**
+  - 클릭한 위치로 달리기
+
 - **수동 이동 (드래그)**
   - 마우스 왼쪽 버튼으로 드래그
   - 드래그 중에는 자동 배회 중지
@@ -85,13 +92,18 @@ macOS 및 Windows 데스크톱에서 자유롭게 돌아다니는 애니메이�
 #### 2.2.2 시스템 트레이
 - 트레이 아이콘 표시
 - 메뉴 항목:
-  - "펫 조작 모드" (클릭 통과 토글)
+  - "자동 모드" (클릭 통과 자동 전환)
+  - "클릭 통과 ON" (고정)
+  - "클릭 통과 OFF" (고정)
   - "종료"
 
 #### 2.2.3 클릭 통과 모드
 - 활성화 시: 펫 아래의 창 클릭 가능
 - 비활성화 시: 펫과 직접 상호작용 가능
-- 기본값: 비활성화 (펫 조작 가능)
+- 기본값: **자동 모드 (클릭 통과 ON)**
+  - 펫 근처에서는 자동으로 클릭 통과 OFF
+  - 펫에서 멀어지면 클릭 통과 ON
+- 트레이에서 **자동/클릭 통과 ON/클릭 통과 OFF**로 모드 고정 전환
 
 ---
 
@@ -130,6 +142,7 @@ desktop-pet/
 
 ```typescript
 type AnimationState = 'idle' | 'walk' | 'run' | 'attack';
+type ClickThroughMode = 'auto' | 'locked_on' | 'locked_off';
 
 interface Position {
   x: number;
@@ -155,18 +168,21 @@ interface PetConfig {
 | isDragging | boolean | 드래그 중 여부 |
 | scale | number | 현재 크기 배율 |
 | showMenu | boolean | 컨텍스트 메뉴 표시 여부 |
-| screenSize | {width, height} | 화면 크기 |
+| clickThrough | boolean | 클릭 통과 상태 |
+| clickThroughMode | 'auto' \| 'locked_on' \| 'locked_off' | 클릭 통과 모드 |
+| mousePosition | Position \| null | 전역 마우스 위치 |
+| screenBounds | {originX, originY, width, height} | 전체 화면 바운딩 |
 
 #### 3.2.3 핵심 useEffect 훅
 
-1. **화면 크기 설정**
+1. **전체 화면 바운딩 설정 (멀티모니터)**
 ```typescript
 useEffect(() => {
-  const width = window.screen.width;
-  const height = window.screen.height;
-  setScreenSize({ width, height });
-  setPosition({ x: width / 2 - frameSize / 2, y: height / 2 - frameSize / 2 });
-  invoke('set_window_bounds', { x: 0, y: 0, width, height });
+  const setupScreens = async () => {
+    const monitors = await invoke<ScreenInfo[]>('get_all_monitors');
+    // 전체 모니터 영역 계산 → window bounds 설정
+  };
+  setupScreens();
 }, []);
 ```
 
@@ -180,23 +196,38 @@ useEffect(() => {
 }, [animState]);
 ```
 
-3. **자동 배회 AI**
+3. **마우스 위치 폴링 + 시선 처리**
+```typescript
+useEffect(() => {
+  const interval = setInterval(async () => {
+    const pos = await invoke<Position | null>('get_mouse_position');
+    // 마우스 위치 업데이트
+  }, 80);
+  return () => clearInterval(interval);
+}, []);
+```
+
+4. **행동 루프 (마우스 반응 + 배회)**
 ```typescript
 useEffect(() => {
   if (isDragging) return;
 
-  const startWander = () => {
-    const actions = ['idle', 'walk', 'idle', 'walk', 'run', 'attack'];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    // 행동에 따른 처리...
+  const decideBehavior = () => {
+    // 마우스 거리 기반 행동 + 랜덤 배회
   };
-
-  startWander();
-  return () => clearTimeout(wanderTimeout.current);
-}, [isDragging, frameSize, screenSize]);
+  decideBehavior();
+  return () => {};
+}, [isDragging]);
 ```
 
-4. **이동 로직**
+5. **바탕화면 클릭 이동 (일반 모드)**
+```typescript
+listen('mouse_click', (event) => {
+  // 클릭 위치로 이동 + run 상태
+});
+```
+
+6. **이동 로직**
 ```typescript
 useEffect(() => {
   if (!targetPosition.current || isDragging || animState === 'idle') return;
@@ -239,6 +270,9 @@ fn set_click_through(enabled: bool, window: tauri::Window) -> Result<(), String>
 fn get_click_through() -> bool
 
 #[tauri::command]
+fn get_mouse_position() -> Option<MousePayload>
+
+#[tauri::command]
 fn get_all_monitors(window: tauri::Window) -> Result<Vec<ScreenInfo>, String>
 
 #[tauri::command]
@@ -249,8 +283,10 @@ fn set_window_bounds(window: tauri::Window, x: i32, y: i32, width: u32, height: 
 
 ```rust
 let quit = MenuItem::with_id(app, "quit", "종료", true, None::<&str>)?;
-let toggle_click = MenuItem::with_id(app, "toggle_click", "펫 조작 모드", true, None::<&str>)?;
-let menu = Menu::with_items(app, &[&toggle_click, &quit])?;
+let mode_auto = MenuItem::with_id(app, "mode_auto", "자동 모드", true, None::<&str>)?;
+let mode_on = MenuItem::with_id(app, "mode_on", "클릭 통과 ON", true, None::<&str>)?;
+let mode_off = MenuItem::with_id(app, "mode_off", "클릭 통과 OFF", true, None::<&str>)?;
+let menu = Menu::with_items(app, &[&mode_auto, &mode_on, &mode_off, &quit])?;
 
 TrayIconBuilder::new()
     .icon(app.default_window_icon().unwrap().clone())
@@ -259,7 +295,9 @@ TrayIconBuilder::new()
     .on_menu_event(move |app, event| {
         match event.id.as_ref() {
             "quit" => app.exit(0),
-            "toggle_click" => { /* 클릭 통과 토글 */ }
+            "mode_auto" => { /* 자동 모드 */ }
+            "mode_on" => { /* 클릭 통과 ON 고정 */ }
+            "mode_off" => { /* 클릭 통과 OFF 고정 */ }
             _ => {}
         }
     })
@@ -282,6 +320,8 @@ fn listen_for_mouse_events(app_handle: AppHandle) {
     });
 }
 ```
+
+- `mouse_click` 이벤트는 **일반 모드 클릭 이동**에 사용
 
 ### 3.4 Tauri 설정 (tauri.conf.json)
 
@@ -410,12 +450,10 @@ irm https://raw.githubusercontent.com/Lee-Kang-Jun0705/desktop-pet/main/install.
 | 이슈 | 상태 | 설명 |
 |------|------|------|
 | 마우스 클릭 감지 | 해결 중 | macOS에서 접근성 권한이 있어도 마우스 훅이 작동하지 않을 수 있음 |
-| 멀티모니터 지원 | 제한적 | 현재 주 모니터에서만 동작 |
 
 ### 6.2 해결 방법
 
-- **클릭 감지 문제**: 클릭 통과 모드를 비활성화하여 펫과 직접 상호작용
-- **멀티모니터**: 향후 버전에서 지원 예정
+- **클릭 감지 문제**: macOS 접근성 권한 확인. 클릭 이동은 비활성화될 수 있음
 
 ---
 
@@ -424,7 +462,6 @@ irm https://raw.githubusercontent.com/Lee-Kang-Jun0705/desktop-pet/main/install.
 ### 7.1 v0.2.0 예정 기능
 - [ ] 다중 캐릭터 선택 UI
 - [ ] 설정 저장 (위치, 크기, 선호 캐릭터)
-- [ ] 멀티모니터 완전 지원
 
 ### 7.2 v0.3.0 예정 기능
 - [ ] 캐릭터 마켓플레이스
