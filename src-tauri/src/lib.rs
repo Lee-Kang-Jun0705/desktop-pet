@@ -106,11 +106,11 @@ pub fn run() {
                 .get_webview_window("main")
                 .expect("Failed to get main window");
 
-            // 기본적으로 클릭 통과 활성화 (다른 앱 클릭 가능)
+            // 기본적으로 클릭 통과 비활성화 (펫 조작 가능)
             window
-                .set_ignore_cursor_events(true)
+                .set_ignore_cursor_events(false)
                 .expect("Failed to set ignore cursor events");
-            CLICK_THROUGH.store(true, Ordering::SeqCst);
+            CLICK_THROUGH.store(false, Ordering::SeqCst);
 
             // 시스템 트레이 메뉴 설정
             let quit = MenuItem::with_id(app, "quit", "종료", true, None::<&str>)?;

@@ -14,15 +14,16 @@
     "windows": [
       {
         "title": "Desktop Pet",
-        "width": 800,
-        "height": 600,
+        "width": 1920,
+        "height": 1080,
         "alwaysOnTop": true,
         "decorations": false,
         "transparent": true,
         "resizable": true,
         "skipTaskbar": true,
         "visible": true,
-        "center": true
+        "fullscreen": false,
+        "maximized": true
       }
     ],
     "trayIcon": {
