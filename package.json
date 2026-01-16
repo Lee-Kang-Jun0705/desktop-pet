@@ -7,19 +7,35 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
-  "keywords": ["tauri", "desktop-pet", "sprite-animation"],
+  "keywords": [
+    "tauri",
+    "desktop-pet",
+    "sprite-animation"
+  ],
   "author": "Kangjun Lee",
   "license": "MIT",
   "packageManager": "pnpm@10.16.1",
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@tauri-apps/cli": "^2.9.6",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
+    "jsdom": "^27.4.0",
+    "playwright": "^1.57.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.0.17"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.9.1",

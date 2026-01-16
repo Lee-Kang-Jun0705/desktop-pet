@@ -32,3 +32,28 @@ export function getPetCenter(pos: Position, size: number): Position {
     y: pos.y + size / 2,
   };
 }
+
+/**
+ * 컨트롤 패널 위치 계산
+ */
+export function calculateControlPanelPosition(
+  screenWidth: number,
+  panelWidth: number,
+  marginTop: number
+): Position {
+  return {
+    x: (screenWidth - panelWidth) / 2,
+    y: marginTop,
+  };
+}
+
+/**
+ * 점이 사각형 내부에 있는지 확인
+ */
+export function isInsideRect(
+  x: number,
+  y: number,
+  rect: { x: number; y: number; width: number; height: number }
+): boolean {
+  return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+}

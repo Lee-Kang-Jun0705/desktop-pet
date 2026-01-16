@@ -32,6 +32,9 @@ import {
   RUN_SPEED,
   TOTAL_FRAMES,
   GRID_SIZE,
+  CONTROL_PANEL_WIDTH,
+  CONTROL_PANEL_HEIGHT,
+  CONTROL_PANEL_MARGIN_TOP,
 } from './constants/pet.constants';
 import { clampPosition } from './utils/position';
 
@@ -135,10 +138,23 @@ function Pet({ config }: PetProps) {
       }));
 
       unlisteners.push(await listen<Position>('mouse_click', (e) => {
-        if (!refs.current.clickThrough || refs.current.isDragging || refs.current.showMenu) return;
-        const { screenBounds: b, frameSize: s } = refs.current;
+        // 드래그 중이거나 메뉴가 열려있으면 무시
+        if (refs.current.isDragging || refs.current.showMenu) return;
+
+        const { screenBounds: b, frameSize: s, position: pos } = refs.current;
+        const clickX = e.payload.x - b.originX;
+        const clickY = e.payload.y - b.originY;
+
+        // 펫 영역 내부 클릭인지 확인 (여유 마진 포함)
+        const margin = INTERACT_MARGIN;
+        const insidePet = clickX >= pos.x - margin && clickX <= pos.x + s + margin
+          && clickY >= pos.y - margin && clickY <= pos.y + s + margin;
+
+        // 펫 영역 외부 클릭 시에만 이동
+        if (insidePet) return;
+
         const target = clampPosition(
-          { x: e.payload.x - b.originX - s / 2, y: e.payload.y - b.originY - s / 2 },
+          { x: clickX - s / 2, y: clickY - s / 2 },
           s, b
         );
         refs.current.targetPosition = target;
@@ -227,10 +243,37 @@ function Pet({ config }: PetProps) {
 
     const { x, y } = refs.current.position;
     const s = refs.current.frameSize;
-    const inside = mousePosition.x >= x - INTERACT_MARGIN && mousePosition.x <= x + s + INTERACT_MARGIN
+    const insidePet = mousePosition.x >= x - INTERACT_MARGIN && mousePosition.x <= x + s + INTERACT_MARGIN
       && mousePosition.y >= y - INTERACT_MARGIN && mousePosition.y <= y + s + INTERACT_MARGIN;
-    setClickThroughSafe(!inside);
+
+    const panelX = (screenBounds.width - CONTROL_PANEL_WIDTH) / 2;
+    const panelY = CONTROL_PANEL_MARGIN_TOP;
+    const insidePanel = mousePosition.x >= panelX && mousePosition.x <= panelX + CONTROL_PANEL_WIDTH
+      && mousePosition.y >= panelY && mousePosition.y <= panelY + CONTROL_PANEL_HEIGHT;
+
+    setClickThroughSafe(!(insidePet || insidePanel));
   }, [mousePosition, isDragging, showMenu, mouseTrackingHealthy, clickThroughMode, setClickThroughSafe]);
+
+  // 고정 모드에서도 컨트롤 패널 접근을 허용
+  useEffect(() => {
+    if (clickThroughMode === 'auto' || !mousePosition) return;
+
+    const panelX = (screenBounds.width - CONTROL_PANEL_WIDTH) / 2;
+    const panelY = CONTROL_PANEL_MARGIN_TOP;
+    const insidePanel = mousePosition.x >= panelX && mousePosition.x <= panelX + CONTROL_PANEL_WIDTH
+      && mousePosition.y >= panelY && mousePosition.y <= panelY + CONTROL_PANEL_HEIGHT;
+
+    if (insidePanel) {
+      setClickThroughSafe(false);
+      return;
+    }
+
+    if (clickThroughMode === 'locked_on') {
+      setClickThroughSafe(true);
+    } else if (clickThroughMode === 'locked_off') {
+      setClickThroughSafe(false);
+    }
+  }, [mousePosition, clickThroughMode, screenBounds.width, setClickThroughSafe]);
 
   // 마우스 추적 건강 체크
   useEffect(() => {
@@ -368,6 +411,15 @@ function Pet({ config }: PetProps) {
     if (clickThroughMode === 'auto') setClickThroughSafe(true);
   }, [clickThroughMode, setClickThroughSafe]);
 
+  const handleModeSelect = useCallback((mode: ClickThroughMode) => {
+    setClickThroughMode(mode);
+    if (mode === 'locked_off') {
+      setClickThroughSafe(false);
+    } else {
+      setClickThroughSafe(true);
+    }
+  }, [setClickThroughSafe]);
+
   const handleAttack = useCallback(() => {
     const now = Date.now();
     setAnimState('attack');
@@ -391,9 +443,15 @@ function Pet({ config }: PetProps) {
         clickThroughMode={clickThroughMode}
         mouseHookError={mouseHookError}
         mouseTrackingHealthy={mouseTrackingHealthy}
+        onModeSelect={handleModeSelect}
       />
 
-      {permissionRequired && <PermissionModal onDismiss={handleDismissPermission} />}
+      {permissionRequired && (
+        <PermissionModal
+          onDismiss={handleDismissPermission}
+          onOpenSettings={() => invoke('open_accessibility_settings').catch(() => {})}
+        />
+      )}
 
       <div
         className="pet-container"

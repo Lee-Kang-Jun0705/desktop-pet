@@ -47,6 +47,11 @@ export const MOUSE_STALE_THRESHOLD = 800;
 export const MOUSE_PERMISSION_THRESHOLD = 2000;
 export const MOUSE_HEALTH_CHECK_INTERVAL = 400;
 
+// 컨트롤 패널 영역 (상단 중앙)
+export const CONTROL_PANEL_WIDTH = 320;
+export const CONTROL_PANEL_HEIGHT = 88;
+export const CONTROL_PANEL_MARGIN_TOP = 20;
+
 // 기본 펫 설정
 export const DEFAULT_PET: PetConfig = {
   id: 'stone-guardian',

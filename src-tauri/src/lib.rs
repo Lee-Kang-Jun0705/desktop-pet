@@ -77,6 +77,14 @@ fn set_window_bounds(window: tauri::Window, x: i32, y: i32, width: u32, height: 
     Ok(())
 }
 
+#[tauri::command]
+fn open_accessibility_settings(app: tauri::AppHandle) -> Result<(), String> {
+    let url = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
+    app.opener()
+        .open_url(url, None::<String>)
+        .map_err(|e| e.to_string())
+}
+
 fn listen_for_mouse_events(app_handle: AppHandle) {
     std::thread::spawn(move || {
         let mut mouse_manager = OtherMouse::new();
@@ -117,6 +125,7 @@ pub fn run() {
             set_click_through,
             get_click_through,
             get_mouse_position,
+            open_accessibility_settings,
             get_all_monitors,
             set_window_bounds
         ])

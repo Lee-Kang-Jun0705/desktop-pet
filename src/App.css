@@ -137,12 +137,37 @@ html, body, #root {
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease;
-  pointer-events: none;
+  pointer-events: auto;
+  width: 320px;
+  min-height: 88px;
 }
 
 .interact-mode-notice small {
   font-size: 11px;
   opacity: 0.9;
+}
+
+.interact-controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.interact-control-button {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.interact-control-button.active {
+  background: #fff;
+  color: #1c1c1c;
+  border-color: #fff;
 }
 
 @keyframes fadeIn {
@@ -201,4 +226,20 @@ html, body, #root {
 
 .permission-button:hover {
   background: #34985f;
+}
+
+.permission-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.permission-button.ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.permission-button.ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

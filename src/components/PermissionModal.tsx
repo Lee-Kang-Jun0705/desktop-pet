@@ -1,8 +1,9 @@
 interface PermissionModalProps {
   onDismiss: () => void;
+  onOpenSettings: () => void;
 }
 
-export function PermissionModal({ onDismiss }: PermissionModalProps) {
+export function PermissionModal({ onDismiss, onOpenSettings }: PermissionModalProps) {
   return (
     <div className="permission-overlay">
       <div className="permission-modal">
@@ -14,9 +15,14 @@ export function PermissionModal({ onDismiss }: PermissionModalProps) {
           <br />
           Desktop Pet(또는 터미널)을 허용해주세요.
         </div>
-        <button className="permission-button" onClick={onDismiss}>
-          확인
-        </button>
+        <div className="permission-actions">
+          <button className="permission-button" onClick={onOpenSettings}>
+            설정 열기
+          </button>
+          <button className="permission-button ghost" onClick={onDismiss}>
+            확인
+          </button>
+        </div>
       </div>
     </div>
   );
