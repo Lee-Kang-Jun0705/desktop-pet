@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: --target aarch64-apple-darwin
+            name: macOS-ARM64
+          - platform: macos-latest
+            args: --target x86_64-apple-darwin
+            name: macOS-Intel
+          - platform: ubuntu-22.04
+            args: ''
+            name: Linux
+          - platform: windows-latest
+            args: ''
+            name: Windows
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Desktop Pet ${{ github.ref_name }}'
+          releaseBody: |
+            Desktop Pet 릴리즈입니다.
+
+            ## 다운로드
+            - **Windows**: `.msi` 또는 `.exe` 파일
+            - **macOS (Apple Silicon)**: `_aarch64.dmg` 파일
+            - **macOS (Intel)**: `_x64.dmg` 파일
+            - **Linux**: `.deb` 또는 `.AppImage` 파일
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
