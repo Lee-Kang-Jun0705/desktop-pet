@@ -1,8 +1,10 @@
 import { vi } from 'vitest';
-import type { Position, ScreenBounds, ClickThroughMode } from '../types/pet.types';
+import type { Position, ScreenBounds } from '../types/pet.types';
 
 export const mockInvoke = vi.fn();
-export const mockListen = vi.fn(() => Promise.resolve(() => {}));
+export const mockListen = vi.fn(
+  (_event: string, _callback: (e: unknown) => void) => Promise.resolve(() => {})
+);
 
 export const mockScreenBounds: ScreenBounds = {
   originX: 0,

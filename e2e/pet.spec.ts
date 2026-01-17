@@ -17,20 +17,15 @@ test.describe('Desktop Pet E2E', () => {
     await expect(sprite).toHaveCSS('background-image', /url/);
   });
 
-  test('should show status notice', async ({ page }) => {
-    const statusNotice = page.locator('.interact-mode-notice');
-    await expect(statusNotice).toBeVisible();
-    await expect(statusNotice).toContainText('클릭 통과');
-  });
-
   test('should show mode buttons', async ({ page }) => {
-    await expect(page.locator('button:has-text("자동")')).toBeVisible();
-    await expect(page.locator('button:has-text("ON")')).toBeVisible();
-    await expect(page.locator('button:has-text("OFF")')).toBeVisible();
+    const controlPanel = page.locator('.control-panel');
+    await expect(controlPanel.getByRole('button', { name: '자동' })).toBeVisible();
+    await expect(controlPanel.getByRole('button', { name: 'ON' })).toBeVisible();
+    await expect(controlPanel.getByRole('button', { name: 'OFF' })).toBeVisible();
   });
 
   test('should change mode when button clicked', async ({ page }) => {
-    const onButton = page.locator('button:has-text("ON")');
+    const onButton = page.locator('.control-panel').getByRole('button', { name: 'ON' });
     await onButton.click();
     await expect(onButton).toHaveClass(/active/);
   });
@@ -41,7 +36,7 @@ test.describe('Desktop Pet E2E', () => {
 
     const contextMenu = page.locator('.context-menu');
     await expect(contextMenu).toBeVisible();
-    await expect(contextMenu).toContainText('Stone Guardian');
+    await expect(contextMenu).toContainText('스톤 가디언');
   });
 
   test('should have attack button in context menu', async ({ page }) => {
@@ -81,9 +76,34 @@ test.describe('Desktop Pet E2E', () => {
     expect(initialBgPos).not.toBe(newBgPos);
   });
 
-  test('should show state indicator', async ({ page }) => {
-    const stateIndicator = page.locator('.state-indicator');
-    await expect(stateIndicator).toBeVisible();
-    await expect(stateIndicator).toContainText(/idle|walk|run|attack/i);
+  test('should add iron fist master from control panel', async ({ page }) => {
+    const addSection = page.locator('.control-section', { hasText: '캐릭터 추가' });
+    await addSection.locator('button', { hasText: '철장 무승' }).click();
+
+    await expect(page.locator('.pet-container')).toHaveCount(2);
+    await expect(page.locator('.control-section', { hasText: '캐릭터 변경' }))
+      .toContainText('철장 무승');
+  });
+
+  test('should change character for selected pet', async ({ page }) => {
+    const changeSection = page.locator('.control-section', { hasText: '캐릭터 변경' });
+    await changeSection.locator('button', { hasText: '철장 무승' }).click();
+    await expect(changeSection).toContainText('철장 무승');
+
+    await changeSection.locator('button', { hasText: '스톤 가디언' }).click();
+    await expect(changeSection).toContainText('스톤 가디언');
+  });
+
+  test('should change scale via control panel slider', async ({ page }) => {
+    const slider = page.locator('input.scale-slider');
+    await slider.evaluate((el) => {
+      const input = el as HTMLInputElement;
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(input, '150');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    await expect(page.locator('.control-section', { hasText: '크기:' }))
+      .toContainText('150%');
   });
 });

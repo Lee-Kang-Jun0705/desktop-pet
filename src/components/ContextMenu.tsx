@@ -8,8 +8,10 @@ interface ContextMenuProps {
   screenBounds: ScreenBounds;
   onScaleChange: (scale: number) => void;
   onAttack: () => void;
+  onJump: () => void;
   onRun: (target: Position) => void;
   onClose: () => void;
+  canJump: boolean;
 }
 
 export function ContextMenu({
@@ -19,11 +21,18 @@ export function ContextMenu({
   screenBounds,
   onScaleChange,
   onAttack,
+  onJump,
   onRun,
   onClose,
+  canJump,
 }: ContextMenuProps) {
   const handleAttackClick = (): void => {
     onAttack();
+    onClose();
+  };
+
+  const handleJumpClick = (): void => {
+    onJump();
     onClose();
   };
 
@@ -57,6 +66,11 @@ export function ContextMenu({
       <div className="menu-item" onClick={handleAttackClick}>
         공격!
       </div>
+      {canJump && (
+        <div className="menu-item" onClick={handleJumpClick}>
+          점프!
+        </div>
+      )}
       <div className="menu-item" onClick={handleRunClick}>
         달려!
       </div>

@@ -13,6 +13,8 @@ vi.mock('@tauri-apps/api/core', () => ({
         return Promise.resolve({ x: 500, y: 500 });
       case 'get_all_monitors':
         return Promise.resolve([{ x: 0, y: 0, width: 1920, height: 1080 }]);
+      case 'get_primary_monitor':
+        return Promise.resolve({ x: 0, y: 0, width: 1920, height: 1080 });
       case 'set_window_bounds':
         return Promise.resolve();
       case 'open_accessibility_settings':

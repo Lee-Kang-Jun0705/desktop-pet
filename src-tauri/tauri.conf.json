@@ -14,8 +14,10 @@
     "windows": [
       {
         "title": "Desktop Pet",
-        "width": 1920,
-        "height": 1080,
+        "width": 3456,
+        "height": 2234,
+        "x": 0,
+        "y": 0,
         "alwaysOnTop": true,
         "decorations": false,
         "transparent": true,
@@ -23,11 +25,11 @@
         "skipTaskbar": true,
         "visible": true,
         "fullscreen": false,
-        "maximized": true
+        "maximized": false
       }
     ],
     "trayIcon": {
-      "iconPath": "icons/icon.png",
+      "iconPath": "icons/tray-template.png",
       "iconAsTemplate": true
     },
     "security": {
@@ -37,6 +39,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/icon.png"]
+    "icon": ["icons/icon.icns"]
   }
 }

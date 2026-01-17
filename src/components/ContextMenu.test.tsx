@@ -10,8 +10,10 @@ describe('ContextMenu', () => {
     screenBounds: { originX: 0, originY: 0, width: 1920, height: 1080 },
     onScaleChange: vi.fn(),
     onAttack: vi.fn(),
+    onJump: vi.fn(),
     onRun: vi.fn(),
     onClose: vi.fn(),
+    canJump: true,
   };
 
   it('renders pet name', () => {
@@ -39,6 +41,14 @@ describe('ContextMenu', () => {
 
     fireEvent.click(screen.getByText('공격!'));
     expect(onAttack).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onJump when jump button clicked', () => {
+    const onJump = vi.fn();
+    render(<ContextMenu {...defaultProps} onJump={onJump} />);
+
+    fireEvent.click(screen.getByText('점프!'));
+    expect(onJump).toHaveBeenCalledTimes(1);
   });
 
   it('calls onRun when run button clicked', () => {
